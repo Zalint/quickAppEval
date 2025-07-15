@@ -118,6 +118,17 @@
                 </div>
             </section>
 
+            <section id="cost-challenge-chart" class="my-16">
+                <h2 class="text-3xl font-bold text-center mb-2 text-[#073B4C]">Défi du Point B en fonction du Prix d'Achat</h2>
+                <p class="text-center text-slate-600 mb-10">Visualisez comment le pourcentage d'augmentation de volume nécessaire pour le Point B varie avec le prix d'achat du kilo.</p>
+                <div class="bg-white p-6 rounded-2xl shadow-lg md:col-span-2">
+                    <div class="chart-container h-[400px] max-h-[500px]">
+                        <canvas id="challengeByCostChart"></canvas>
+                    </div>
+                    <p class="text-center mt-4 text-sm text-slate-500">Un prix d'achat plus élevé rend le défi du Point B plus difficile.</p>
+                </div>
+            </section>
+
             <section id="breakdown" class="my-16">
                 <h2 class="text-3xl font-bold text-center mb-2 text-[#073B4C]">Anatomie de la Marge par Kilogramme</h2>
                 <p class="text-center text-slate-600 mb-10">La différence de rentabilité réside dans la composition du prix de vente de chaque point de vente.</p>
@@ -209,10 +220,11 @@
             darkBlue: '#073B4C',
         };
 
-        let comparisonChart, projectionChart, breakdownAChart, breakdownBChart;
+        let comparisonChart, projectionChart, breakdownAChart, breakdownBChart, challengeByCostChart;
 
         function calculateMetrics(sellingPrice, totalRevenue, costPerKg, fixedCosts) {
             if (sellingPrice <= costPerKg || sellingPrice <= 0 || costPerKg <= 0 || totalRevenue < 0 || fixedCosts < 0) {
+                // Return values that indicate invalid state or loss
                 return { quantitySold: 0, unitMargin: 0, grossMargin: -fixedCosts, netProfit: -fixedCosts };
             }
             const quantitySold = totalRevenue / sellingPrice;
@@ -251,6 +263,7 @@
                 if (projectionChart) { projectionChart.data.datasets[0].data = []; projectionChart.data.datasets[1].data = []; projectionChart.update(); }
                 if (breakdownAChart) { breakdownAChart.data.datasets[0].data = []; breakdownAChart.update(); }
                 if (breakdownBChart) { breakdownBChart.data.datasets[0].data = []; breakdownBChart.update(); }
+                if (challengeByCostChart) { challengeByCostChart.data.datasets[0].data = []; challengeByCostChart.update(); }
                 return;
             }
 
@@ -265,12 +278,11 @@
 
             // Point B's Challenge
             let requiredIncrease = 'N/A';
-            if (metricsB.unitMargin > 0) {
+            if (metricsB.unitMargin > 0 && initialSalesVolume > 0) {
                 const requiredGrossMarginB = metricsA.netProfit + fixedCosts;
                 const requiredQuantityB = requiredGrossMarginB / metricsB.unitMargin;
                 const requiredRevenueB = requiredQuantityB * priceB;
                 requiredIncrease = (((requiredRevenueB - initialSalesVolume) / initialSalesVolume) * 100).toFixed(0) + '%';
-                if (initialSalesVolume === 0) requiredIncrease = 'N/A'; // Avoid division by zero if initial volume is 0
             }
             document.getElementById('requiredIncreaseB').textContent = requiredIncrease;
 
@@ -297,6 +309,35 @@
 
             breakdownBChart.data.datasets[0].data = [costPerKg, metricsB.unitMargin];
             breakdownBChart.update();
+
+            // Update Challenge by Cost Chart
+            const costRangeLabels = [];
+            const challengeData = [];
+            for (let c = 2800; c <= 3500; c += 100) {
+                costRangeLabels.push(c + ' FCFA/kg');
+                const hypotheticalMetricsA = calculateMetrics(priceA, initialSalesVolume, c, fixedCosts);
+                const hypotheticalMetricsB = calculateMetrics(priceB, initialSalesVolume, c, fixedCosts);
+
+                let challengePercentage = null;
+                // Ensure unit margins are positive to avoid division by zero or negative values
+                if (hypotheticalMetricsB.unitMargin > 0 && initialSalesVolume > 0 && hypotheticalMetricsA.netProfit + fixedCosts > 0) {
+                    const requiredGrossMarginB = hypotheticalMetricsA.netProfit + fixedCosts;
+                    const requiredQuantityB = requiredGrossMarginB / hypotheticalMetricsB.unitMargin;
+                    const requiredRevenueB = requiredQuantityB * priceB;
+                    challengePercentage = (((requiredRevenueB - initialSalesVolume) / initialSalesVolume) * 100);
+                } else if (hypotheticalMetricsB.unitMargin <= 0 && hypotheticalMetricsA.netProfit + fixedCosts > 0) {
+                     // If B's unit margin is non-positive but A is profitable, challenge is infinite
+                     challengePercentage = 1000; // Represent as a very high number or handle as infinite
+                } else if (hypotheticalMetricsA.netProfit + fixedCosts <= 0) {
+                    // If A is not profitable (or less than fixed costs), B's challenge might be 0 or less
+                    challengePercentage = 0;
+                }
+                challengeData.push(challengePercentage);
+            }
+            challengeByCostChart.data.labels = costRangeLabels; // Corrected variable name
+            challengeByCostChart.data.datasets[0].data = challengeData;
+            challengeByCostChart.update();
+
 
             // Annual Projection
             const annualProfitA = metricsA.netProfit * 12;
@@ -417,6 +458,38 @@
                     maintainAspectRatio: false,
                     plugins: { ...tooltipCallback.plugins,
                         legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            challengeByCostChart = new Chart(document.getElementById('challengeByCostChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '% Augmentation Volume Requis pour Point B',
+                        data: [],
+                        borderColor: colors.red,
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { ...tooltipCallback,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            title: { display: true, text: '% Augmentation de Volume' },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: { display: true, text: 'Prix d\'Achat (FCFA/kg)' }
+                        }
                     }
                 }
             });
