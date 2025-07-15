@@ -6,6 +6,7 @@
     <title>Infographie: Analyse Comparative des Ventes de Bœuf</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -69,6 +70,22 @@
                     <div>
                         <label for="rent" class="block text-sm font-medium text-slate-700 mb-1">Loyer Mensuel (FCFA)</label>
                         <input type="number" id="rent" value="100000" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD166] focus:ring-[#FFD166] text-lg p-2">
+                    </div>
+                     <div>
+                        <label for="perte" class="block text-sm font-medium text-slate-700 mb-1">Perte (Découpe & Commercialisation) (%)</label>
+                        <input type="number" id="perte" value="14.4" min="0" max="99" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#06D6A0] focus:ring-[#06D6A0] text-lg p-2">
+                    </div>
+                    <div>
+                        <label for="byProductRevenuePerKgReceived" class="block text-sm font-medium text-slate-700 mb-1">Revenus des sous-produits (FCFA/kg reçu)</label>
+                        <input type="number" id="byProductRevenuePerKgReceived" value="313.0" min="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#06D6A0] focus:ring-[#06D6A0] text-lg p-2">
+                    </div>
+                    <div>
+                        <label for="otherCharges" class="block text-sm font-medium text-slate-700 mb-1">Autre Charge Mensuelle (FCFA)</label>
+                        <input type="number" id="otherCharges" value="0" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD166] focus:ring-[#FFD166] text-lg p-2">
+                    </div>
+                     <div>
+                        <label for="effectivePerte" class="block text-sm font-medium text-slate-700 mb-1">Perte effective (%)</label>
+                        <p id="effectivePerte" class="mt-1 block w-full text-lg p-2 text-slate-800 font-bold">0.0%</p>
                     </div>
                 </div>
             </section>
@@ -187,6 +204,37 @@
                     </div>
                 </div>
             </section>
+
+            <section id="hypotheses" class="my-16 bg-white p-8 rounded-2xl shadow-lg">
+                <h2 class="text-3xl font-bold text-center mb-6 text-[#073B4C]">Hypothèses et Calculs Détaillés</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-slate-700">
+                    <div>
+                        <h3 class="text-xl font-bold text-[#073B4C] mb-3">Calcul de la Perte par Défaut (14.4%)</h3>
+                        <p class="text-sm leading-relaxed">Cet historique détaille comment la valeur par défaut de la perte due à la découpe et commercialisation a été établie :</p>
+                        <ul class="list-disc list-inside ml-4 mt-2 text-sm leading-relaxed">
+                            <li>**Bœuf reçu (07/03/25) :** 143,5 kg</li>
+                            <li>**Quantité vendue (7-8-9 mars) :** 122,8 kg</li>
+                            <li>**Déchets relevés :** 12,3 kg (composé de 0,2 kg + 9 kg + 2,5 kg de "bobette pour merguez" + 0,6 kg)</li>
+                            <li>**Quantité non vendue au prix principal (déchets + disparus) :** 143,5 kg - 122,8 kg = 20,7 kg</li>
+                            <li>**Quantité disparue :** 20,7 kg - 12,3 kg (déchets) = 8,4 kg</li>
+                            <li>**Perte en % = (Quantité non vendue au prix principal / Bœuf reçu) * 100**</li>
+                            <li>**Perte en % = (20,7 kg / 143,5 kg) * 100 = 14,4%**</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-[#073B4C] mb-3">Calcul des Revenus des Sous-produits par Défaut (313.0 FCFA/kg reçu)</h3>
+                        <p class="text-sm leading-relaxed">Ce calcul montre comment la valeur par défaut de la récupération de valeur des sous-produits a été déterminée :</p>
+                        <ul class="list-disc list-inside ml-4 mt-2 text-sm leading-relaxed">
+                            <li>**Revenus des déchets vendus :** 12,3 kg * 400 FCFA/kg = 4 920 FCFA</li>
+                            <li>**Revenus des abats :** 25 000 FCFA</li>
+                            <li>**Revenus du foie :** 15 000 FCFA</li>
+                            <li>**Total des revenus des sous-produits pour 143,5 kg de bœuf reçu :** 4 920 FCFA + 25 000 FCFA + 15 000 FCFA = 44 920 FCFA</li>
+                            <li>**Revenus des sous-produits par kg reçu = Total des revenus des sous-produits / Bœuf reçu**</li>
+                            <li>**Revenus des sous-produits par kg reçu = 44 920 FCFA / 143,5 kg = 313,0 FCFA/kg**</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <footer class="text-center mt-16 py-6 border-t border-slate-200">
@@ -196,6 +244,9 @@
     </div>
 
     <script>
+        // Register the datalabels plugin globally
+        Chart.register(ChartDataLabels);
+
         const tooltipCallback = {
             plugins: {
                 tooltip: {
@@ -222,16 +273,20 @@
 
         let comparisonChart, projectionChart, breakdownAChart, breakdownBChart, challengeByCostChart;
 
-        function calculateMetrics(sellingPrice, totalRevenue, costPerKg, fixedCosts) {
-            if (sellingPrice <= costPerKg || sellingPrice <= 0 || costPerKg <= 0 || totalRevenue < 0 || fixedCosts < 0) {
-                // Return values that indicate invalid state or loss
-                return { quantitySold: 0, unitMargin: 0, grossMargin: -fixedCosts, netProfit: -fixedCosts };
+        function calculateMetrics(sellingPrice, totalRevenue, costPerKg, fixedCosts, pertePercentage, byProductRevenuePerKgReceived) {
+            const netCostPerKgReceived = costPerKg - byProductRevenuePerKgReceived;
+            const effectiveCostPerKgSold = netCostPerKgReceived / (1 - pertePercentage / 100);
+
+            // Check for conditions that make calculations invalid or lead to immediate loss
+            if (sellingPrice <= effectiveCostPerKgSold || sellingPrice <= 0 || costPerKg <= 0 || totalRevenue < 0 || fixedCosts < 0 || pertePercentage < 0 || pertePercentage >= 100 || netCostPerKgReceived <= 0) {
+                return { quantitySold: 0, unitMargin: 0, grossMargin: -fixedCosts, netProfit: -fixedCosts, effectiveCostPerKgSold: effectiveCostPerKgSold };
             }
-            const quantitySold = totalRevenue / sellingPrice;
-            const unitMargin = sellingPrice - costPerKg;
+
+            const quantitySold = totalRevenue / sellingPrice; // This is the revenue-generating quantity for the main product
+            const unitMargin = sellingPrice - effectiveCostPerKgSold; // Margin per kg *sold*
             const grossMargin = quantitySold * unitMargin;
             const netProfit = grossMargin - fixedCosts;
-            return { quantitySold, unitMargin, grossMargin, netProfit };
+            return { quantitySold, unitMargin, grossMargin, netProfit, effectiveCostPerKgSold: effectiveCostPerKgSold };
         }
 
         function updateInfographic() {
@@ -241,15 +296,28 @@
             const initialSalesVolume = parseFloat(document.getElementById('initialSalesVolume').value);
             const salaries = parseFloat(document.getElementById('salaries').value);
             const rent = parseFloat(document.getElementById('rent').value);
+            const otherCharges = parseFloat(document.getElementById('otherCharges').value); // Get new input
+            const perte = parseFloat(document.getElementById('perte').value);
+            const byProductRevenuePerKgReceived = parseFloat(document.getElementById('byProductRevenuePerKgReceived').value);
 
-            const fixedCosts = salaries + rent;
+            const fixedCosts = salaries + rent + otherCharges; // Include new charge
 
-            // Update min attribute for selling prices based on costPerKg
-            document.getElementById('priceA').min = costPerKg > 0 ? costPerKg + 1 : 1;
-            document.getElementById('priceB').min = costPerKg > 0 ? costPerKg + 1 : 1;
+            // Calculate effective costs for min attribute updates
+            const effectiveCostA_threshold = (costPerKg - byProductRevenuePerKgReceived) / (1 - perte / 100);
+            const effectiveCostB_threshold = (costPerKg - byProductRevenuePerKgReceived) / (1 - perte / 100);
 
-            if (isNaN(costPerKg) || isNaN(priceA) || isNaN(priceB) || isNaN(initialSalesVolume) || isNaN(salaries) || isNaN(rent) ||
-                priceA <= costPerKg || priceB <= costPerKg || costPerKg <= 0 || initialSalesVolume < 0 || salaries < 0 || rent < 0) {
+            // Update min attribute for selling prices based on effective cost threshold
+            document.getElementById('priceA').min = effectiveCostA_threshold > 0 ? Math.ceil(effectiveCostA_threshold) + 1 : 1;
+            document.getElementById('priceB').min = effectiveCostB_threshold > 0 ? Math.ceil(effectiveCostB_threshold) + 1 : 1;
+
+            // Main validation check for displaying "Invalide"
+            const netCostPerKgReceived_check = costPerKg - byProductRevenuePerKgReceived;
+            const effectiveCostPerKgSold_check = netCostPerKgReceived_check / (1 - perte / 100);
+
+            if (isNaN(costPerKg) || isNaN(priceA) || isNaN(priceB) || isNaN(initialSalesVolume) || isNaN(salaries) || isNaN(rent) || isNaN(otherCharges) || isNaN(perte) || isNaN(byProductRevenuePerKgReceived) || // Added otherCharges
+                priceA <= effectiveCostPerKgSold_check || priceB <= effectiveCostPerKgSold_check ||
+                costPerKg <= 0 || initialSalesVolume < 0 || salaries < 0 || rent < 0 || otherCharges < 0 || perte < 0 || perte >= 100 || byProductRevenuePerKgReceived < 0 || netCostPerKgReceived_check <= 0) { // Added otherCharges
+                
                 document.getElementById('netProfitA').textContent = 'Invalide';
                 document.getElementById('netProfitB').textContent = 'Invalide';
                 document.getElementById('requiredIncreaseB').textContent = 'N/A';
@@ -258,6 +326,7 @@
                 document.getElementById('annualProfitA').textContent = 'N/A';
                 document.getElementById('annualProfitB').textContent = 'N/A';
                 document.getElementById('currentSalesVolumeDisplay').textContent = 'N/A';
+                document.getElementById('effectivePerte').textContent = 'N/A'; // Update new field
 
                 if (comparisonChart) { comparisonChart.data.datasets[0].data = []; comparisonChart.data.datasets[1].data = []; comparisonChart.update(); }
                 if (projectionChart) { projectionChart.data.datasets[0].data = []; projectionChart.data.datasets[1].data = []; projectionChart.update(); }
@@ -269,85 +338,82 @@
 
             document.getElementById('currentSalesVolumeDisplay').textContent = new Intl.NumberFormat('fr-FR').format(initialSalesVolume);
 
-            // Current Performance (Initial Sales Volume FCFA)
-            const metricsA = calculateMetrics(priceA, initialSalesVolume, costPerKg, fixedCosts);
-            const metricsB = calculateMetrics(priceB, initialSalesVolume, costPerKg, fixedCosts);
+            const metricsA = calculateMetrics(priceA, initialSalesVolume, costPerKg, fixedCosts, perte, byProductRevenuePerKgReceived);
+            const metricsB = calculateMetrics(priceB, initialSalesVolume, costPerKg, fixedCosts, perte, byProductRevenuePerKgReceived);
 
             document.getElementById('netProfitA').textContent = new Intl.NumberFormat('fr-FR').format(Math.round(metricsA.netProfit)) + ' FCFA';
             document.getElementById('netProfitB').textContent = new Intl.NumberFormat('fr-FR').format(Math.round(metricsB.netProfit)) + ' FCFA';
 
-            // Point B's Challenge
             let requiredIncrease = 'N/A';
             if (metricsB.unitMargin > 0 && initialSalesVolume > 0) {
                 const requiredGrossMarginB = metricsA.netProfit + fixedCosts;
                 const requiredQuantityB = requiredGrossMarginB / metricsB.unitMargin;
                 const requiredRevenueB = requiredQuantityB * priceB;
-                requiredIncrease = (((requiredRevenueB - initialSalesVolume) / initialSalesVolume) * 100).toFixed(0) + '%';
+                requiredIncrease = (((requiredRevenueB - initialSalesVolume) / initialSalesVolume) * 100).toFixed(1) + '%';
             }
             document.getElementById('requiredIncreaseB').textContent = requiredIncrease;
 
-            // Update Comparison Chart
             comparisonChart.data.datasets[0].data = [metricsA.grossMargin, metricsB.grossMargin];
             comparisonChart.data.datasets[1].data = [metricsA.netProfit, metricsB.netProfit];
             comparisonChart.update();
 
-            // Update Projection Chart
-            const volumes = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // Volumes in millions FCFA
-            const benefitA = volumes.map(v => calculateMetrics(priceA, v * 1000000, costPerKg, fixedCosts).netProfit);
-            const benefitB = volumes.map(v => calculateMetrics(priceB, v * 1000000, costPerKg, fixedCosts).netProfit);
+            const volumes = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+            const benefitA = volumes.map(v => calculateMetrics(priceA, v * 1000000, costPerKg, fixedCosts, perte, byProductRevenuePerKgReceived).netProfit);
+            const benefitB = volumes.map(v => calculateMetrics(priceB, v * 1000000, costPerKg, fixedCosts, perte, byProductRevenuePerKgReceived).netProfit);
 
             projectionChart.data.datasets[0].data = benefitA;
             projectionChart.data.datasets[1].data = benefitB;
             projectionChart.update();
 
-            // Update Breakdown Charts
-            document.getElementById('marginA').textContent = `Une marge unitaire forte de ${new Intl.NumberFormat('fr-FR').format(Math.round(metricsA.unitMargin))} FCFA/kg.`;
-            document.getElementById('marginB').textContent = `Une marge unitaire plus faible de ${new Intl.NumberFormat('fr-FR').format(Math.round(metricsB.unitMargin))} FCFA/kg.`;
+            document.getElementById('marginA').textContent = `Une marge unitaire forte de ${new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(metricsA.unitMargin)} FCFA/kg.`;
+            document.getElementById('marginB').textContent = `Une marge unitaire plus faible de ${new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(metricsB.unitMargin)} FCFA/kg.`;
 
-            breakdownAChart.data.datasets[0].data = [costPerKg, metricsA.unitMargin];
+            breakdownAChart.data.datasets[0].data = [metricsA.effectiveCostPerKgSold, metricsA.unitMargin];
             breakdownAChart.update();
 
-            breakdownBChart.data.datasets[0].data = [costPerKg, metricsB.unitMargin];
+            breakdownBChart.data.datasets[0].data = [metricsB.effectiveCostPerKgSold, metricsB.unitMargin];
             breakdownBChart.update();
 
-            // Update Challenge by Cost Chart
             const costRangeLabels = [];
             const challengeData = [];
             for (let c = 2800; c <= 3500; c += 100) {
                 costRangeLabels.push(c + ' FCFA/kg');
-                const hypotheticalMetricsA = calculateMetrics(priceA, initialSalesVolume, c, fixedCosts);
-                const hypotheticalMetricsB = calculateMetrics(priceB, initialSalesVolume, c, fixedCosts);
+                const hypotheticalMetricsA = calculateMetrics(priceA, initialSalesVolume, c, fixedCosts, perte, byProductRevenuePerKgReceived);
+                const hypotheticalMetricsB = calculateMetrics(priceB, initialSalesVolume, c, fixedCosts, perte, byProductRevenuePerKgReceived);
 
                 let challengePercentage = null;
-                // Ensure unit margins are positive to avoid division by zero or negative values
                 if (hypotheticalMetricsB.unitMargin > 0 && initialSalesVolume > 0 && hypotheticalMetricsA.netProfit + fixedCosts > 0) {
                     const requiredGrossMarginB = hypotheticalMetricsA.netProfit + fixedCosts;
                     const requiredQuantityB = requiredGrossMarginB / hypotheticalMetricsB.unitMargin;
                     const requiredRevenueB = requiredQuantityB * priceB;
                     challengePercentage = (((requiredRevenueB - initialSalesVolume) / initialSalesVolume) * 100);
+                    if (challengePercentage === 0) challengePercentage = 0.01;
                 } else if (hypotheticalMetricsB.unitMargin <= 0 && hypotheticalMetricsA.netProfit + fixedCosts > 0) {
-                     // If B's unit margin is non-positive but A is profitable, challenge is infinite
-                     challengePercentage = 1000; // Represent as a very high number or handle as infinite
+                     challengePercentage = NaN;
                 } else if (hypotheticalMetricsA.netProfit + fixedCosts <= 0) {
-                    // If A is not profitable (or less than fixed costs), B's challenge might be 0 or less
-                    challengePercentage = 0;
+                    challengePercentage = 0.01;
                 }
                 challengeData.push(challengePercentage);
             }
-            challengeByCostChart.data.labels = costRangeLabels; // Corrected variable name
+            challengeByCostChart.data.labels = costRangeLabels;
             challengeByCostChart.data.datasets[0].data = challengeData;
             challengeByCostChart.update();
 
-
-            // Annual Projection
             const annualProfitA = metricsA.netProfit * 12;
             const annualProfitB = metricsB.netProfit * 12;
 
             document.getElementById('annualProfitA').textContent = new Intl.NumberFormat('fr-FR').format(Math.round(annualProfitA)) + ' FCFA';
             document.getElementById('annualProfitB').textContent = new Intl.NumberFormat('fr-FR').format(Math.round(annualProfitB)) + ' FCFA';
+
+            // Calculate and update effective perte
+            let calculatedEffectivePerte = (perte - (byProductRevenuePerKgReceived / costPerKg) * 100);
+            if (isNaN(calculatedEffectivePerte) || costPerKg === 0) { // Handle division by zero or invalid inputs
+                document.getElementById('effectivePerte').textContent = 'N/A';
+            } else {
+                document.getElementById('effectivePerte').textContent = calculatedEffectivePerte.toFixed(1) + '%';
+            }
         }
 
-        // Initialize Charts
         window.onload = function() {
             comparisonChart = new Chart(document.getElementById('comparisonChart').getContext('2d'), {
                 type: 'bar',
@@ -357,10 +423,34 @@
                         label: 'Marge Brute (FCFA)',
                         data: [],
                         backgroundColor: colors.blue,
+                        datalabels: {
+                            align: 'end',
+                            anchor: 'end',
+                            color: colors.darkBlue,
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            },
+                            formatter: function(value, context) {
+                                return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+                            }
+                        }
                     }, {
                         label: 'Bénéfice Net (FCFA)',
                         data: [],
                         backgroundColor: colors.green,
+                        datalabels: {
+                            align: 'end',
+                            anchor: 'end',
+                            color: colors.darkBlue,
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            },
+                            formatter: function(value, context) {
+                                return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+                            }
+                        }
                     }]
                 },
                 options: { ...tooltipCallback,
@@ -393,17 +483,65 @@
                         borderColor: colors.blue,
                         backgroundColor: 'rgba(17, 138, 178, 0.1)',
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        datalabels: {
+                            align: function(context) {
+                                const value = context.dataset.data[context.dataIndex];
+                                return value > 0 ? 'end' : 'start';
+                            },
+                            anchor: 'end',
+                            color: function(context) {
+                                const value = context.dataset.data[context.dataIndex];
+                                return value > 0 ? colors.blue : colors.red;
+                            },
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            },
+                            formatter: function(value, context) {
+                                const dataIndex = context.dataIndex;
+                                const dataLength = context.dataset.data.length;
+
+                                if (dataIndex === 0 || dataIndex === dataLength - 1) {
+                                    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+                                }
+                                return '';
+                            }
+                        }
                     }, {
                         label: 'Bénéfice Net Point B',
                         data: [],
                         borderColor: colors.red,
                         backgroundColor: 'rgba(255, 107, 107, 0.1)',
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        datalabels: {
+                            align: function(context) {
+                                const value = context.dataset.data[context.dataIndex];
+                                return value > 0 ? 'end' : 'start';
+                            },
+                            anchor: 'end',
+                            color: function(context) {
+                                const value = context.dataset.data[context.dataIndex];
+                                return value > 0 ? colors.blue : colors.red;
+                            },
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            },
+                            formatter: function(value, context) {
+                                const dataIndex = context.dataIndex;
+                                const dataLength = context.dataset.data.length;
+
+                                if (dataIndex === 0 || dataIndex === dataLength - 1) {
+                                    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+                                }
+                                return '';
+                            }
+                        }
                     }]
                 },
-                options: { ...tooltipCallback,
+                options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
@@ -418,6 +556,10 @@
                         x: {
                             title: { display: true, text: 'Chiffre d\'Affaires' }
                         }
+                    },
+                    plugins: {
+                        tooltip: tooltipCallback.plugins.tooltip,
+                        title: { display: true, text: 'Projection de Rentabilité par Volume' }
                     }
                 }
             });
@@ -425,12 +567,18 @@
             breakdownAChart = new Chart(document.getElementById('breakdownAChart').getContext('2d'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Coût d\'achat', 'Marge Brute'],
+                    labels: ['Coût effectif d\'achat', 'Marge unitaire'],
                     datasets: [{
                         data: [],
                         backgroundColor: [colors.darkBlue, colors.blue],
                         borderColor: '#FFFFFF',
-                        borderWidth: 4
+                        borderWidth: 4,
+                        datalabels: {
+                            color: '#fff',
+                            formatter: function(value, context) {
+                                return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+                            }
+                        }
                     }]
                 },
                 options: { ...tooltipCallback,
@@ -445,12 +593,18 @@
             breakdownBChart = new Chart(document.getElementById('breakdownBChart').getContext('2d'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Coût d\'achat', 'Marge Brute'],
+                    labels: ['Coût effectif d\'achat', 'Marge unitaire'],
                     datasets: [{
                         data: [],
                         backgroundColor: [colors.darkBlue, colors.red],
                         borderColor: '#FFFFFF',
-                        borderWidth: 4
+                        borderWidth: 4,
+                        datalabels: {
+                            color: '#fff',
+                            formatter: function(value, context) {
+                                return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+                            }
+                        }
                     }]
                 },
                 options: { ...tooltipCallback,
@@ -472,37 +626,95 @@
                         borderColor: colors.red,
                         backgroundColor: 'rgba(255, 107, 107, 0.1)',
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        datalabels: {
+                            align: 'end',
+                            anchor: 'end',
+                            color: colors.darkBlue,
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            },
+                            formatter: function(value, context) {
+                                if (isNaN(value)) {
+                                    return 'Impossible';
+                                } else if (value === 0.01) {
+                                    return '0.0%';
+                                } else {
+                                    return value.toFixed(1) + '%';
+                                }
+                            }
+                        }
                     }]
                 },
-                options: { ...tooltipCallback,
+                options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         y: {
+                            type: 'logarithmic',
                             title: { display: true, text: '% Augmentation de Volume' },
                             ticks: {
-                                callback: function(value) {
-                                    return value + '%';
+                                callback: function(value, index, values) {
+                                    if (value === 0.01) {
+                                        return '0%';
+                                    }
+                                    const power = Math.log10(value);
+                                    if (Number.isInteger(power) || value === 1 || value === 10 || value === 100) {
+                                        return value.toLocaleString('fr-FR') + '%';
+                                    }
+                                    return null;
                                 }
-                            }
+                            },
+                            min: 0.01
                         },
                         x: {
                             title: { display: true, text: 'Prix d\'Achat (FCFA/kg)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                        return label.join(' ');
+                                    }
+                                    return label;
+                                },
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (isNaN(context.parsed.y)) {
+                                        label += 'Impossible';
+                                    } else if (context.parsed.y === 0.01) {
+                                        label += '0.0%';
+                                    } else {
+                                        label += context.parsed.y.toFixed(1) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     }
                 }
             });
 
-            // Event Listeners for inputs
             document.getElementById('costPerKg').addEventListener('input', updateInfographic);
             document.getElementById('priceA').addEventListener('input', updateInfographic);
             document.getElementById('priceB').addEventListener('input', updateInfographic);
             document.getElementById('initialSalesVolume').addEventListener('input', updateInfographic);
             document.getElementById('salaries').addEventListener('input', updateInfographic);
             document.getElementById('rent').addEventListener('input', updateInfographic);
+            document.getElementById('otherCharges').addEventListener('input', updateInfographic);
+            document.getElementById('perte').addEventListener('input', updateInfographic);
+            document.getElementById('byProductRevenuePerKgReceived').addEventListener('input', updateInfographic);
 
-            // Initial update
             updateInfographic();
         };
     </script>
