@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographie: Analyse Comparative des Ventes de Bœuf</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .kpi-value {
+            font-weight: 900;
+            color: #073B4C;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header class="text-center my-12">
+            <h1 class="text-4xl md:text-5xl font-black text-[#073B4C] leading-tight">Prix vs. Volume : La Bataille pour la Rentabilité</h1>
+            <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">Une analyse comparative de deux stratégies de vente de bœuf pour découvrir laquelle génère le plus de profits.</p>
+        </header>
+
+        <main>
+            <section id="inputs" class="mb-16 bg-white p-8 rounded-2xl shadow-lg">
+                <h2 class="text-3xl font-bold text-center mb-6 text-[#073B4C]">Paramètres de Simulation</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    <div>
+                        <label for="costPerKg" class="block text-sm font-medium text-slate-700 mb-1">Prix d'Achat (FCFA/kg)</label>
+                        <input type="number" id="costPerKg" value="3350" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#06D6A0] focus:ring-[#06D6A0] text-lg p-2">
+                    </div>
+                    <div>
+                        <label for="priceA" class="block text-sm font-medium text-slate-700 mb-1">Prix de Vente Point A (FCFA/kg)</label>
+                        <input type="number" id="priceA" value="3900" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#118AB2] focus:ring-[#118AB2] text-lg p-2">
+                    </div>
+                    <div>
+                        <label for="priceB" class="block text-sm font-medium text-slate-700 mb-1">Prix de Vente Point B (FCFA/kg)</label>
+                        <input type="number" id="priceB" value="3700" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF6B6B] focus:ring-[#FF6B6B] text-lg p-2">
+                    </div>
+                    <div>
+                        <label for="initialSalesVolume" class="block text-sm font-medium text-slate-700 mb-1">Chiffre d'Affaires Mensuel (FCFA)</label>
+                        <input type="number" id="initialSalesVolume" value="7000000" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD166] focus:ring-[#FFD166] text-lg p-2">
+                    </div>
+                    <div>
+                        <label for="salaries" class="block text-sm font-medium text-slate-700 mb-1">Charges Salariales Mensuelles (FCFA)</label>
+                        <input type="number" id="salaries" value="250000" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD166] focus:ring-[#FFD166] text-lg p-2">
+                    </div>
+                    <div>
+                        <label for="rent" class="block text-sm font-medium text-slate-700 mb-1">Loyer Mensuel (FCFA)</label>
+                        <input type="number" id="rent" value="100000" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD166] focus:ring-[#FFD166] text-lg p-2">
+                    </div>
+                </div>
+            </section>
+
+            <section id="snapshot" class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-2 text-[#073B4C]">Performance Actuelle (CA de <span id="currentSalesVolumeDisplay">7M</span> FCFA)</h2>
+                <p class="text-center text-slate-600 mb-10">À volume de chiffre d'affaires égal, la stratégie de prix premium du Point A se détache nettement.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-[#118AB2]">
+                            <h3 class="font-bold text-xl text-[#073B4C]">Point de Vente A (Prix Haut)</h3>
+                            <p class="text-slate-500 mb-2">Bénéfice Net</p>
+                            <p id="netProfitA" class="text-5xl kpi-value">637 250 <span class="text-3xl font-semibold">FCFA</span></p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-[#FF6B6B]">
+                            <h3 class="font-bold text-xl text-[#073B4C]">Point de Vente B (Volume Bas)</h3>
+                            <p class="text-slate-500 mb-2">Bénéfice Net</p>
+                            <p id="netProfitB" class="text-5xl kpi-value">312 200 <span class="text-3xl font-semibold">FCFA</span></p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <div class="chart-container">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                         <p class="text-center mt-4 text-sm text-slate-500">Le Point A génère plus du double du bénéfice net du Point B.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="challenge" class="bg-[#073B4C] text-white py-16 rounded-2xl shadow-xl my-16 text-center">
+                 <h2 class="text-3xl font-bold mb-4 text-[#FFD166]">Le Défi du Point de Vente B</h2>
+                 <p class="text-slate-300 max-w-2xl mx-auto mb-6">Pour égaler le bénéfice du Point A, le Point B ne doit pas seulement vendre plus, il doit augmenter son volume de ventes de manière spectaculaire.</p>
+                 <div id="requiredIncreaseB" class="text-8xl font-black text-white">
+                     +49%
+                 </div>
+                 <p class="mt-2 text-xl text-slate-300">d'augmentation de volume requise.</p>
+            </section>
+
+            <section id="projection" class="my-16">
+                <h2 class="text-3xl font-bold text-center mb-2 text-[#073B4C]">Projection de Rentabilité par Volume</h2>
+                <p class="text-center text-slate-600 mb-10">La stratégie de marge élevée du Point A continue de surperformer à mesure que le volume des ventes augmente.</p>
+                <div class="bg-white p-6 rounded-2xl shadow-lg md:col-span-2">
+                    <div class="chart-container h-[400px] max-h-[500px]">
+                        <canvas id="projectionChart"></canvas>
+                    </div>
+                    <p class="text-center mt-4 text-sm text-slate-500">L'écart de profit se creuse avec l'augmentation du chiffre d'affaires.</p>
+                </div>
+            </section>
+
+            <section id="breakdown" class="my-16">
+                <h2 class="text-3xl font-bold text-center mb-2 text-[#073B4C]">Anatomie de la Marge par Kilogramme</h2>
+                <p class="text-center text-slate-600 mb-10">La différence de rentabilité réside dans la composition du prix de vente de chaque point de vente.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                         <h3 class="text-xl font-bold text-center mb-4 text-[#118AB2]">Point de Vente A</h3>
+                        <div class="chart-container">
+                            <canvas id="breakdownAChart"></canvas>
+                        </div>
+                        <p id="marginA" class="text-center mt-4 text-sm text-slate-500">Une marge unitaire forte de 550 FCFA/kg.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-xl font-bold text-center mb-4 text-[#FF6B6B]">Point de Vente B</h3>
+                        <div class="chart-container">
+                            <canvas id="breakdownBChart"></canvas>
+                        </div>
+                         <p id="marginB" class="text-center mt-4 text-sm text-slate-500">Une marge unitaire plus faible de 350 FCFA/kg.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="annual-projection" class="my-16 bg-[#06D6A0] text-white py-16 rounded-2xl shadow-xl text-center">
+                <h2 class="text-3xl font-bold mb-4 text-[#073B4C]">Projection Annuelle de Rentabilité</h2>
+                <p class="text-slate-100 max-w-2xl mx-auto mb-8">En extrapolant les bénéfices mensuels actuels sur une année complète, nous pouvons anticiper la performance financière à long terme.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-[#073B4C]">
+                        <h3 class="font-bold text-xl mb-2">Bénéfice Annuel Point A</h3>
+                        <p id="annualProfitA" class="text-5xl kpi-value">0 <span class="text-3xl font-semibold">FCFA</span></p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-[#073B4C]">
+                        <h3 class="font-bold text-xl mb-2">Bénéfice Annuel Point B</h3>
+                        <p id="annualProfitB" class="text-5xl kpi-value">0 <span class="text-3xl font-semibold">FCFA</span></p>
+                    </div>
+                </div>
+                <p class="mt-6 text-sm text-slate-100">Ces projections sont basées sur les paramètres de simulation actuels.</p>
+            </section>
+
+            <section id="recommendations" class="my-16">
+                 <h2 class="text-3xl font-bold text-center mb-10 text-[#073B4C]">Recommandations Stratégiques</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-[#118AB2]">
+                        <h3 class="text-2xl font-bold text-[#073B4C] mb-4">🎯 Pour le Point de Vente A</h3>
+                        <ul class="space-y-3 list-disc list-inside text-slate-700">
+                            <li><strong>Maintenir le prix premium</strong> en continuant de justifier la valeur par la qualité et le service.</li>
+                            <li><strong>Optimiser les coûts opérationnels</strong> pour augmenter encore la marge nette.</li>
+                            <li><strong>Investir dans la fidélisation</strong> pour sécuriser la clientèle à forte valeur.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-[#FF6B6B]">
+                        <h3 class="text-2xl font-bold text-[#073B4C] mb-4">📈 Pour le Point de Vente B</h3>
+                         <ul class="space-y-3 list-disc list-inside text-slate-700">
+                            <li><strong>Prioriser l'augmentation massive du volume</strong> via des actions marketing et promotionnelles agressives.</li>
+                            <li><strong>Envisager une légère hausse de prix</strong> si possible pour améliorer la marge unitaire sans freiner le volume.</li>
+                            <li><strong>Améliorer l'efficacité opérationnelle</strong> pour réduire les coûts fixes et variables.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center mt-16 py-6 border-t border-slate-200">
+            <p class="text-sm text-slate-500">&copy; 2025 Analyse Stratégique Inc. Tous droits réservés.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const tooltipCallback = {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                                return label.join(' ');
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        const colors = {
+            blue: '#118AB2',
+            red: '#FF6B6B',
+            green: '#06D6A0',
+            darkBlue: '#073B4C',
+        };
+
+        let comparisonChart, projectionChart, breakdownAChart, breakdownBChart;
+
+        function calculateMetrics(sellingPrice, totalRevenue, costPerKg, fixedCosts) {
+            if (sellingPrice <= costPerKg || sellingPrice <= 0 || costPerKg <= 0 || totalRevenue < 0 || fixedCosts < 0) {
+                return { quantitySold: 0, unitMargin: 0, grossMargin: -fixedCosts, netProfit: -fixedCosts };
+            }
+            const quantitySold = totalRevenue / sellingPrice;
+            const unitMargin = sellingPrice - costPerKg;
+            const grossMargin = quantitySold * unitMargin;
+            const netProfit = grossMargin - fixedCosts;
+            return { quantitySold, unitMargin, grossMargin, netProfit };
+        }
+
+        function updateInfographic() {
+            const costPerKg = parseFloat(document.getElementById('costPerKg').value);
+            const priceA = parseFloat(document.getElementById('priceA').value);
+            const priceB = parseFloat(document.getElementById('priceB').value);
+            const initialSalesVolume = parseFloat(document.getElementById('initialSalesVolume').value);
+            const salaries = parseFloat(document.getElementById('salaries').value);
+            const rent = parseFloat(document.getElementById('rent').value);
+
+            const fixedCosts = salaries + rent;
+
+            // Update min attribute for selling prices based on costPerKg
+            document.getElementById('priceA').min = costPerKg > 0 ? costPerKg + 1 : 1;
+            document.getElementById('priceB').min = costPerKg > 0 ? costPerKg + 1 : 1;
+
+            if (isNaN(costPerKg) || isNaN(priceA) || isNaN(priceB) || isNaN(initialSalesVolume) || isNaN(salaries) || isNaN(rent) ||
+                priceA <= costPerKg || priceB <= costPerKg || costPerKg <= 0 || initialSalesVolume < 0 || salaries < 0 || rent < 0) {
+                document.getElementById('netProfitA').textContent = 'Invalide';
+                document.getElementById('netProfitB').textContent = 'Invalide';
+                document.getElementById('requiredIncreaseB').textContent = 'N/A';
+                document.getElementById('marginA').textContent = 'Marge unitaire: N/A';
+                document.getElementById('marginB').textContent = 'Marge unitaire: N/A';
+                document.getElementById('annualProfitA').textContent = 'N/A';
+                document.getElementById('annualProfitB').textContent = 'N/A';
+                document.getElementById('currentSalesVolumeDisplay').textContent = 'N/A';
+
+                if (comparisonChart) { comparisonChart.data.datasets[0].data = []; comparisonChart.data.datasets[1].data = []; comparisonChart.update(); }
+                if (projectionChart) { projectionChart.data.datasets[0].data = []; projectionChart.data.datasets[1].data = []; projectionChart.update(); }
+                if (breakdownAChart) { breakdownAChart.data.datasets[0].data = []; breakdownAChart.update(); }
+                if (breakdownBChart) { breakdownBChart.data.datasets[0].data = []; breakdownBChart.update(); }
+                return;
+            }
+
+            document.getElementById('currentSalesVolumeDisplay').textContent = new Intl.NumberFormat('fr-FR').format(initialSalesVolume);
+
+            // Current Performance (Initial Sales Volume FCFA)
+            const metricsA = calculateMetrics(priceA, initialSalesVolume, costPerKg, fixedCosts);
+            const metricsB = calculateMetrics(priceB, initialSalesVolume, costPerKg, fixedCosts);
+
+            document.getElementById('netProfitA').textContent = new Intl.NumberFormat('fr-FR').format(Math.round(metricsA.netProfit)) + ' FCFA';
+            document.getElementById('netProfitB').textContent = new Intl.NumberFormat('fr-FR').format(Math.round(metricsB.netProfit)) + ' FCFA';
+
+            // Point B's Challenge
+            let requiredIncrease = 'N/A';
+            if (metricsB.unitMargin > 0) {
+                const requiredGrossMarginB = metricsA.netProfit + fixedCosts;
+                const requiredQuantityB = requiredGrossMarginB / metricsB.unitMargin;
+                const requiredRevenueB = requiredQuantityB * priceB;
+                requiredIncrease = (((requiredRevenueB - initialSalesVolume) / initialSalesVolume) * 100).toFixed(0) + '%';
+                if (initialSalesVolume === 0) requiredIncrease = 'N/A'; // Avoid division by zero if initial volume is 0
+            }
+            document.getElementById('requiredIncreaseB').textContent = requiredIncrease;
+
+            // Update Comparison Chart
+            comparisonChart.data.datasets[0].data = [metricsA.grossMargin, metricsB.grossMargin];
+            comparisonChart.data.datasets[1].data = [metricsA.netProfit, metricsB.netProfit];
+            comparisonChart.update();
+
+            // Update Projection Chart
+            const volumes = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // Volumes in millions FCFA
+            const benefitA = volumes.map(v => calculateMetrics(priceA, v * 1000000, costPerKg, fixedCosts).netProfit);
+            const benefitB = volumes.map(v => calculateMetrics(priceB, v * 1000000, costPerKg, fixedCosts).netProfit);
+
+            projectionChart.data.datasets[0].data = benefitA;
+            projectionChart.data.datasets[1].data = benefitB;
+            projectionChart.update();
+
+            // Update Breakdown Charts
+            document.getElementById('marginA').textContent = `Une marge unitaire forte de ${new Intl.NumberFormat('fr-FR').format(Math.round(metricsA.unitMargin))} FCFA/kg.`;
+            document.getElementById('marginB').textContent = `Une marge unitaire plus faible de ${new Intl.NumberFormat('fr-FR').format(Math.round(metricsB.unitMargin))} FCFA/kg.`;
+
+            breakdownAChart.data.datasets[0].data = [costPerKg, metricsA.unitMargin];
+            breakdownAChart.update();
+
+            breakdownBChart.data.datasets[0].data = [costPerKg, metricsB.unitMargin];
+            breakdownBChart.update();
+
+            // Annual Projection
+            const annualProfitA = metricsA.netProfit * 12;
+            const annualProfitB = metricsB.netProfit * 12;
+
+            document.getElementById('annualProfitA').textContent = new Intl.NumberFormat('fr-FR').format(Math.round(annualProfitA)) + ' FCFA';
+            document.getElementById('annualProfitB').textContent = new Intl.NumberFormat('fr-FR').format(Math.round(annualProfitB)) + ' FCFA';
+        }
+
+        // Initialize Charts
+        window.onload = function() {
+            comparisonChart = new Chart(document.getElementById('comparisonChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Point A', 'Point B'],
+                    datasets: [{
+                        label: 'Marge Brute (FCFA)',
+                        data: [],
+                        backgroundColor: colors.blue,
+                    }, {
+                        label: 'Bénéfice Net (FCFA)',
+                        data: [],
+                        backgroundColor: colors.green,
+                    }]
+                },
+                options: { ...tooltipCallback,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('fr-FR').format(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: { ...tooltipCallback.plugins,
+                        title: { display: true, text: 'Marge Brute vs. Bénéfice Net' }
+                    }
+                }
+            });
+
+            const volumes = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+            projectionChart = new Chart(document.getElementById('projectionChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: volumes.map(v => v + 'M FCFA'),
+                    datasets: [{
+                        label: 'Bénéfice Net Point A',
+                        data: [],
+                        borderColor: colors.blue,
+                        backgroundColor: 'rgba(17, 138, 178, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Bénéfice Net Point B',
+                        data: [],
+                        borderColor: colors.red,
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { ...tooltipCallback,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            title: { display: true, text: 'Bénéfice Net (FCFA)' },
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('fr-FR').format(value);
+                                }
+                            }
+                        },
+                        x: {
+                            title: { display: true, text: 'Chiffre d\'Affaires' }
+                        }
+                    }
+                }
+            });
+            
+            breakdownAChart = new Chart(document.getElementById('breakdownAChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Coût d\'achat', 'Marge Brute'],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [colors.darkBlue, colors.blue],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 4
+                    }]
+                },
+                options: { ...tooltipCallback,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { ...tooltipCallback.plugins,
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            breakdownBChart = new Chart(document.getElementById('breakdownBChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Coût d\'achat', 'Marge Brute'],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [colors.darkBlue, colors.red],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 4
+                    }]
+                },
+                options: { ...tooltipCallback,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { ...tooltipCallback.plugins,
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Event Listeners for inputs
+            document.getElementById('costPerKg').addEventListener('input', updateInfographic);
+            document.getElementById('priceA').addEventListener('input', updateInfographic);
+            document.getElementById('priceB').addEventListener('input', updateInfographic);
+            document.getElementById('initialSalesVolume').addEventListener('input', updateInfographic);
+            document.getElementById('salaries').addEventListener('input', updateInfographic);
+            document.getElementById('rent').addEventListener('input', updateInfographic);
+
+            // Initial update
+            updateInfographic();
+        };
+    </script>
+</body>
+</html>
